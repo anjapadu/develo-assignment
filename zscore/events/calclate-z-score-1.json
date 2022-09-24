@@ -1,0 +1,12 @@
+{
+  "httpMethod": "GET",
+  "queryStringParameters": {
+    "months": 9,
+    "sex": 1,
+    "weight": 9.7,
+    "height": null,
+    "headc": null,
+    "bmi": null,
+    "attribute": "weight"
+  }
+}
