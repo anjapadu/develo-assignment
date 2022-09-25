@@ -15,7 +15,7 @@ interface ItemInterface {
 }
 
 function App() {
-  const percentilesValue = ['P5', 'P10', 'P25', 'P50', 'P75', 'P85', 'P95']
+  const percentilesValue = ['P10', 'P25', 'P50', 'P85', 'P95']
   const [ageArray, setAgeArray] = useState([{ showErrorAge: false, showErrorBmi: false, bmi: '', ageMonths: '', id: 1 }])
 
   const addObAjectToArray = () => {
@@ -78,10 +78,13 @@ function App() {
     const yAxisData = xAxisData.map((curr: any) => percentilesValue.map((columnName) => {
       return dataPerGender[curr][columnName]
     }))
+    console.log({ yAxisData })
     const clientData: number[] = result.map(({ bmi }: ItemInterface) => bmi)
-    const series = yAxisData.map((data: any, index: number) => {
+    console.log({ yAxisData })
+    const series: any = percentilesValue.map((_, index) => {
       return {
-        data,
+        data: yAxisData.map((arr: any) => arr[index]).reverse(),
+        smooth: true,
         showSymbol: false,
         type: 'line',
         areaStyle: {
@@ -90,7 +93,13 @@ function App() {
         lineStyle: {
           color: '#76b5c5'
         },
-        name: percentilesValue[index]
+        endLabel: {
+          show: true,
+          formatter: function (params: any) {
+            return params.seriesName
+          }
+        },
+        name: percentilesValue[index ]
       }
     })
     series.push({
@@ -106,7 +115,7 @@ function App() {
     const chartData = {
       xAxis: {
         type: 'category',
-        boundaryGap: false,
+        boundaryGap: true,
         data: xAxisData,
         name: 'agemos'
       },
@@ -124,6 +133,7 @@ function App() {
     let option: EChartsOption
     //@ts-ignore
     option = chartData
+    console.log(chartData)
     myChart.setOption(option)
   }
   return (
