@@ -77,3 +77,4 @@ curl --request GET \
 Used data on json format.
 Hope the ui is intuitive enough and the code easy to follow up :).
 
+![Alt text](chart-generator/image.png?raw=true "Screenshot")
