@@ -70,7 +70,7 @@ function App() {
     //@ts-ignore
     const dataPerGender = bmiAgeData[sex]
     // transform age to agemos
-    const xAxisData = result.reduce((prev: ItemInterface[], current: ItemInterface) => {
+    const xAxisData = result.reduce((prev: string[], current: ItemInterface) => {
       const { ageMonths } = current
       return [...prev, `${ageMonths}.5`]
     }, [])
