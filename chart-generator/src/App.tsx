@@ -3,49 +3,30 @@ import './App.css';
 import Input from './components/Input';
 import bmiAgeData from './bmi-age.json'
 import * as echarts from 'echarts';
+import BMIForm from './components/BMIForm';
 
 type EChartsOption = echarts.EChartsOption
 
-const Button = ({ onClick }: any) => {
-  return (
-    <div className="">
-      <button onClick={onClick} type="button" className="inline-flex items-center rounded-full border border-transparent bg-indigo-600 p-1 text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-        <svg className="h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-          <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
-        </svg>
-      </button>
-    </div>
-  )
+interface ItemInterface {
+  showErrorAge?: boolean
+  showErrorBmi?: boolean
+  bmi?: string | number
+  ageMonths?: string | number
+  id?: number
 }
 
-const BMIForm = ({ isLast = false, addExtra = () => { }, id = '', showErrorAge = false, showErrorBmi = false }) => {
-  return (
-    <div className="bg-white px-4 py-5 sm:p-6">
-      <div className="grid grid-cols-3 gap-4">
-        <Input
-          id={`${id}-age`}
-          label='Age (months)'
-          error={showErrorAge}
-        />
-        <Input
-          error={showErrorBmi}
-          id={`${id}-bmi`}
-          label='BMI (kg/m2)'
-        />
-        {isLast && <Button onClick={addExtra} />}
-      </div>
-    </div>
-  )
-}
 function App() {
   const percentilesValue = ['P5', 'P10', 'P25', 'P50', 'P75', 'P85', 'P95']
   const [ageArray, setAgeArray] = useState([{ showErrorAge: false, showErrorBmi: false, bmi: '', ageMonths: '', id: 1 }])
+
   const addObAjectToArray = () => {
     setAgeArray([...ageArray, { showErrorAge: false, showErrorBmi: false, bmi: '', ageMonths: '', id: ageArray.length + 1 }])
-    console.log({ ageArray })
   }
+
+  // function to generate echarts data
   const generateChartData = () => {
     let hasErrors = false
+    let max: number | undefined
     const result = ageArray.reduce((prev: any, { id }) => {
       const bmiInput: any = document.querySelector(`#item-${id}-bmi`)
       const ageInput: any = document.querySelector(`#item-${id}-age`)
@@ -67,6 +48,7 @@ function App() {
           hasErrors = true
         } else {
           bmi = parseFloat(bmiInput.value)
+          max = !max || bmi > max ? bmi : max
         }
       }
       return [
@@ -79,7 +61,6 @@ function App() {
           id
         }]
     }, [])
-
     const sexInput: HTMLInputElement | null = document.querySelector('[name=sex]:checked')
     let sex = sexInput?.value
     setAgeArray(result)
@@ -89,32 +70,52 @@ function App() {
     //@ts-ignore
     const dataPerGender = bmiAgeData[sex]
     // transform age to agemos
-    const xAxisData = result.reduce((prev: any, current: any) => {
+    const xAxisData = result.reduce((prev: ItemInterface[], current: ItemInterface) => {
       const { ageMonths } = current
       return [...prev, `${ageMonths}.5`]
     }, [])
     const yAxisData = xAxisData.map((curr: any) => percentilesValue.map((columnName) => {
       return dataPerGender[curr][columnName]
     }))
-    const series = yAxisData.map((data: any) => {
+    const clientData: number[] = result.map(({ bmi }: ItemInterface) => bmi)
+    const series = yAxisData.map((data: any, index: number) => {
       return {
         data,
+        showSymbol: false,
         type: 'line',
-        areaStyle: {}
+        areaStyle: {
+          color: '#abdbe3'
+        },
+        lineStyle: {
+          color: '#76b5c5'
+        },
+
+        name: percentilesValue[index]
       }
     })
     series.push({
-      data: result.map(({ bmi }: any) => bmi),
-      type: 'line'
+      data: clientData,
+      type: 'line',
+      lineStyle: {
+        color: 'black'
+      },
+      itemStyle: {
+        color: 'black'
+      },
     })
+    const min = Math.min(...clientData) * 0.9
     const chartData = {
       xAxis: {
         type: 'category',
         boundaryGap: false,
-        data: xAxisData
+        data: xAxisData,
+        name: 'agemos'
       },
       yAxis: {
-        type: 'value'
+        type: 'value',
+        name: 'bmi(kg/m2)',
+        min,
+        max: max ? max * 1.2 : max
       },
       series
     }
@@ -125,7 +126,6 @@ function App() {
     //@ts-ignore
     option = chartData
     myChart.setOption(option)
-    console.log(JSON.stringify(chartData))
   }
   return (
     <div className="App px-20 py-20">
@@ -188,7 +188,23 @@ function App() {
             </div>
           </div>
         </div>
-        <div id='chart-dom' style={{ height: 500 }}></div>
+
+        <div className="hidden sm:block" aria-hidden="true">
+          <div className="py-5">
+            <div className="border-t border-gray-200"></div>
+          </div>
+        </div>
+        <div className="mt-10 sm:mt-0">
+          <div className="md:grid md:grid-cols-3 md:gap-6">
+            <div className="md:col-span-1">
+              <div className="px-4 sm:px-0" />
+            </div>
+            <div className="mt-5 md:col-span-2 md:mt-0">
+
+              <div id='chart-dom' style={{ height: 500, width: 750 }}></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
