@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './App.css';
-import Input from './components/Input';
 import bmiAgeData from './bmi-age.json'
 import * as echarts from 'echarts';
 import BMIForm from './components/BMIForm';
@@ -27,6 +26,7 @@ function App() {
   const generateChartData = () => {
     let hasErrors = false
     let max: number | undefined
+    let min: number | undefined
     const result = ageArray.reduce((prev: any, { id }) => {
       const bmiInput: any = document.querySelector(`#item-${id}-bmi`)
       const ageInput: any = document.querySelector(`#item-${id}-age`)
@@ -49,6 +49,7 @@ function App() {
         } else {
           bmi = parseFloat(bmiInput.value)
           max = !max || bmi > max ? bmi : max
+          min = !min || bmi < min ? bmi : min
         }
       }
       return [
@@ -89,7 +90,6 @@ function App() {
         lineStyle: {
           color: '#76b5c5'
         },
-
         name: percentilesValue[index]
       }
     })
@@ -103,7 +103,6 @@ function App() {
         color: 'black'
       },
     })
-    const min = Math.min(...clientData) * 0.9
     const chartData = {
       xAxis: {
         type: 'category',
@@ -114,7 +113,7 @@ function App() {
       yAxis: {
         type: 'value',
         name: 'bmi(kg/m2)',
-        min,
+        min: min ? Math.round(min * 0.95) : min,
         max: max ? max * 1.2 : max
       },
       series
@@ -201,7 +200,7 @@ function App() {
             </div>
             <div className="mt-5 md:col-span-2 md:mt-0">
               {/* chart container */}
-              <div id='chart-dom' style={{ height: 500, width: 750 }}></div>
+              <div id='chart-dom' style={{ height: 500 }}></div>
             </div>
           </div>
         </div>
