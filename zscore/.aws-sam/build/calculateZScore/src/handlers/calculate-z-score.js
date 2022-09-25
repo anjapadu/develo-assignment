@@ -7,9 +7,12 @@ const calculateZ = (L, M, S, X) => {
 }
 
 const getAgemos = (months, agemosByGender) => {
-  if (agemosByGender.includes(`${months}`)) {
+  // validate if provided months exists in the data. Because we have tables from 0 - 36 and from 24 - 240
+  // we use this values to validate if an equal agemos exists.
+  if (['0', '36', '24', '240'].includes(months) && agemosByGender.includes(`${months}`)) {
     return `${months}`
   }
+  // validating agemos exists
   if (agemosByGender.includes(`${months}.5`)) {
     return `${months}.5`
   }
@@ -20,8 +23,6 @@ exports.calculateZScore = async (event) => {
   if (event.httpMethod !== 'GET') {
     throw new Error('Not supported method');
   }
-  // All log statements are written to CloudWatch
-  console.info('received:', event);
   const {
     months,
     attribute,
@@ -31,7 +32,23 @@ exports.calculateZScore = async (event) => {
     headc,
     bmi
   } = event.queryStringParameters
-
+  const validAttributes = ['bmi', 'headc', 'length', 'weight', 'height']
+  if (!validAttributes.includes(attribute)) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        msg: `You are requesting an invalid attribute. Please use one of the following values: ${validAttributes.join(',')}`
+      })
+    }
+  }
+  if (!event.queryStringParameters[attribute]) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({
+        msg: `You have requested for the calculation of the ${attribute} but didn't provided the value.`
+      })
+    }
+  }
   const parsedMonths = parseInt(months, 10)
   const fileName = `../data/${attribute}-age.json`
   const data = require(fileName)
