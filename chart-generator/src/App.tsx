@@ -200,7 +200,7 @@ function App() {
               <div className="px-4 sm:px-0" />
             </div>
             <div className="mt-5 md:col-span-2 md:mt-0">
-
+              {/* chart container */}
               <div id='chart-dom' style={{ height: 500, width: 750 }}></div>
             </div>
           </div>

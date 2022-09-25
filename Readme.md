@@ -70,3 +70,10 @@ curl --request GET \
 - weight
 - height
 - length
+
+
+# Chart generation interface
+
+Used data on json format.
+Hope the ui is intuitive enough and the code easy to follow up :).
+
